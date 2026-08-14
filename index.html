@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8월 어필리에이트 영상 업로드 대시보드</title>
+<style>
+:root{
+  --bg:#f7f5f0;
+  --surface:#ffffff;
+  --surface-2:#efece4;
+  --ink:#1d2320;
+  --ink-soft:#5a6058;
+  --line:#ddd7c9;
+  --teal:#0f6f62;
+  --teal-soft:#dcece7;
+  --coral:#d9552c;
+  --coral-soft:#f7ddd0;
+  --amber:#b8862f;
+  --amber-soft:#f3e6cd;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14180f;
+    --surface:#1c221a;
+    --surface-2:#242b1f;
+    --ink:#eeeee6;
+    --ink-soft:#a9ad9f;
+    --line:#333a2b;
+    --teal:#4fb39f;
+    --teal-soft:#233732;
+    --coral:#e78257;
+    --coral-soft:#3a2620;
+    --amber:#d9ac5e;
+    --amber-soft:#3a3020;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14180f;
+  --surface:#1c221a;
+  --surface-2:#242b1f;
+  --ink:#eeeee6;
+  --ink-soft:#a9ad9f;
+  --line:#333a2b;
+  --teal:#4fb39f;
+  --teal-soft:#233732;
+  --coral:#e78257;
+  --coral-soft:#3a2620;
+  --amber:#d9ac5e;
+  --amber-soft:#3a3020;
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Pretendard,Roboto,sans-serif;
+  line-height:1.5;
+  padding:2.5rem 1.5rem 4rem;
+}
+.wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:1.75rem;}
+
+.masthead{
+  display:flex;
+  flex-direction:column;
+  gap:.4rem;
+  border-bottom:1px solid var(--line);
+  padding-bottom:1.25rem;
+}
+.eyebrow{
+  font-size:.72rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--teal);
+  font-weight:700;
+  font-variant-numeric:tabular-nums;
+}
+h1{
+  font-family:Georgia,"Iowan Old Style","Noto Serif KR",serif;
+  font-size:2.05rem;
+  margin:0;
+  text-wrap:balance;
+  font-weight:600;
+  letter-spacing:-.01em;
+}
+.sub{color:var(--ink-soft);font-size:.92rem;max-width:60ch;}
+
+.kpi-row{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+}
+.kpi{
+  background:var(--surface);
+  padding:1.1rem 1.2rem;
+  display:flex;
+  flex-direction:column;
+  gap:.3rem;
+}
+.kpi .label{font-size:.72rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em;}
+.kpi .value{
+  font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  font-size:1.7rem;
+  font-weight:600;
+  font-variant-numeric:tabular-nums;
+}
+.kpi .value small{font-size:.85rem;font-weight:500;color:var(--ink-soft);}
+.kpi .note{font-size:.72rem;color:var(--ink-soft);}
+.kpi.accent .value{color:var(--coral);}
+
+.panel{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:1.4rem 1.5rem;
+}
+.panel h2{
+  font-family:Georgia,"Noto Serif KR",serif;
+  font-size:1.15rem;
+  margin:0 0 .2rem;
+  font-weight:600;
+}
+.panel .desc{color:var(--ink-soft);font-size:.85rem;margin:0 0 1.1rem;}
+
+/* daily chart */
+.daily-chart{
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  gap:.6rem;
+  align-items:end;
+  height:180px;
+  padding-top:.5rem;
+}
+.day-col{display:flex;flex-direction:column;align-items:center;gap:.4rem;height:100%;justify-content:flex-end;}
+.bar{
+  width:100%;
+  max-width:34px;
+  border-radius:5px 5px 3px 3px;
+  background:var(--teal);
+  position:relative;
+  transition:transform .15s ease;
+}
+.bar.peak{background:var(--coral);}
+.day-col:hover .bar{transform:scaleY(1.02);}
+.bar .count{
+  position:absolute;
+  top:-1.35rem;
+  left:50%;
+  transform:translateX(-50%);
+  font-family:ui-monospace,monospace;
+  font-size:.75rem;
+  font-weight:600;
+  font-variant-numeric:tabular-nums;
+}
+.day-label{font-size:.68rem;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+
+/* creator ranking */
+.rank-list{display:flex;flex-direction:column;gap:.55rem;}
+.rank-row{display:grid;grid-template-columns:1.6rem 9rem 1fr 2.4rem;gap:.7rem;align-items:center;}
+.rank-num{font-family:ui-monospace,monospace;font-size:.75rem;color:var(--ink-soft);text-align:right;}
+.rank-name{font-size:.85rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rank-track{background:var(--surface-2);border-radius:5px;height:10px;overflow:hidden;}
+.rank-fill{height:100%;background:var(--teal);border-radius:5px;}
+.rank-fill.top{background:var(--coral);}
+.rank-count{font-family:ui-monospace,monospace;font-size:.8rem;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-soft);}
+
+/* monthly context */
+.month-strip{display:flex;gap:.5rem;align-items:flex-end;height:110px;padding-top:.4rem;}
+.month-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:.35rem;height:100%;justify-content:flex-end;}
+.month-bar{width:70%;border-radius:4px 4px 2px 2px;background:var(--surface-2);position:relative;}
+.month-bar.done{background:var(--ink-soft);opacity:.55;}
+.month-bar.current{background:var(--coral);}
+.month-val{font-family:ui-monospace,monospace;font-size:.7rem;color:var(--ink-soft);}
+.month-lbl{font-size:.72rem;color:var(--ink-soft);}
+.month-lbl.current{color:var(--coral);font-weight:700;}
+
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:.35rem;
+  background:var(--amber-soft);
+  color:var(--amber);
+  border-radius:99px;
+  padding:.15rem .6rem;
+  font-size:.72rem;
+  font-weight:600;
+  width:fit-content;
+}
+.legend{display:flex;gap:1.1rem;font-size:.75rem;color:var(--ink-soft);margin-top:.7rem;flex-wrap:wrap;}
+.legend span{display:inline-flex;align-items:center;gap:.35rem;}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+footer{
+  border-top:1px solid var(--line);
+  padding-top:1rem;
+  font-size:.76rem;
+  color:var(--ink-soft);
+  display:flex;
+  flex-direction:column;
+  gap:.35rem;
+}
+
+@media (max-width:640px){
+  .kpi-row{grid-template-columns:repeat(2,1fr);}
+  .rank-row{grid-template-columns:1.4rem 5.5rem 1fr 2rem;}
+  .daily-chart{gap:.35rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="masthead">
+    <span class="eyebrow">Nutrione · Paid Affiliate Video Tracker</span>
+    <h1>8월 어필리에이트 영상 업로드 현황</h1>
+    <p class="sub">Weekly Tracker(Paid_Affiliate_Video) 기준, 2026년 8월 1일 ~ 8월 10일 업로드 영상 77건을 집계했습니다. 8월은 아직 진행 중인 달입니다.</p>
+    <span class="pill">● 데이터 기준일 2026-08-14 · 8/11 이후 미반영</span>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi accent">
+      <span class="label">8월 누적 업로드</span>
+      <span class="value">77<small>건</small></span>
+      <span class="note">8/1 – 8/10 (진행 중)</span>
+    </div>
+    <div class="kpi">
+      <span class="label">활동 크리에이터</span>
+      <span class="value">14<small>명</small></span>
+      <span class="note">7월 41명 대비 축소</span>
+    </div>
+    <div class="kpi">
+      <span class="label">일 평균 업로드</span>
+      <span class="value">7.7<small>건/일</small></span>
+      <span class="note">경과일 10일 기준</span>
+    </div>
+    <div class="kpi">
+      <span class="label">최다 업로드일</span>
+      <span class="value">8/3<small>(17건)</small></span>
+      <span class="note">brostacked·cuponesyofertas 등 집중</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>일별 업로드 추이 — 8월 1일 ~ 10일</h2>
+    <p class="desc">막대 위 숫자는 해당일 업로드 영상 수입니다. 8/3에 업로드가 집중되었고, 이후 8/8~8/9 저조 후 반등하는 흐름입니다.</p>
+    <div class="daily-chart" id="dailyChart"></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--teal)"></i>일반 업로드일</span>
+      <span><i class="dot" style="background:var(--coral)"></i>최다 업로드일(8/3)</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>월별 업로드 추이 — 3월 ~ 8월</h2>
+    <p class="desc">3~7월은 마감된 실적, 8월은 8/10까지의 잠정치입니다. 7월(295건) 대비 8월은 아직 초반이라 낮게 보이는 점에 유의하세요.</p>
+    <div class="month-strip" id="monthStrip"></div>
+  </div>
+
+  <div class="panel">
+    <h2>크리에이터별 업로드 순위 — 8월</h2>
+    <p class="desc">14명의 크리에이터가 8월 영상을 업로드했습니다. brostacked · cuponesyofertas_yaass · dpark_way2가 각 10건으로 공동 선두입니다.</p>
+    <div class="rank-list" id="rankList"></div>
+  </div>
+
+  <footer>
+    <div>출처: <strong>[External] Nutrione - Weekly Tracker - Paid_Affiliate_Video.pdf</strong> (파일 생성일 2026-08-14), 개별 영상 업로드 로그 691행 중 실데이터 690행(8/10)까지 반영.</div>
+    <div>참고: <strong>5번_월별업로드_게런티매칭_v1.xlsx</strong>는 8/6 기준으로 스냅샷되어 8월 실적이 11건으로 더 적게 잡혀 있습니다 — 본 대시보드는 더 최신인 Weekly Tracker 기준으로 작성했습니다.</div>
+  </footer>
+
+</div>
+
+<script>
+const daily = [
+  {d:'8/1', v:10},
+  {d:'8/2', v:2},
+  {d:'8/3', v:17},
+  {d:'8/4', v:11},
+  {d:'8/5', v:6},
+  {d:'8/6', v:11},
+  {d:'8/7', v:10},
+  {d:'8/8', v:5},
+  {d:'8/9', v:2},
+  {d:'8/10', v:3},
+];
+const maxDaily = Math.max(...daily.map(x=>x.v));
+const dailyEl = document.getElementById('dailyChart');
+daily.forEach(item=>{
+  const col = document.createElement('div');
+  col.className = 'day-col';
+  const barWrap = document.createElement('div');
+  barWrap.style.position = 'relative';
+  barWrap.style.width = '100%';
+  barWrap.style.height = (item.v/maxDaily*100)+'%';
+  barWrap.style.display='flex';
+  barWrap.style.justifyContent='center';
+  const bar = document.createElement('div');
+  bar.className = 'bar' + (item.v===maxDaily ? ' peak':'');
+  bar.style.height = '100%';
+  const count = document.createElement('span');
+  count.className = 'count';
+  count.textContent = item.v;
+  bar.appendChild(count);
+  barWrap.appendChild(bar);
+  const label = document.createElement('span');
+  label.className = 'day-label';
+  label.textContent = item.d;
+  col.appendChild(barWrap);
+  col.appendChild(label);
+  dailyEl.appendChild(col);
+});
+
+const months = [
+  {m:'3월', v:22, status:'done'},
+  {m:'4월', v:101, status:'done'},
+  {m:'5월', v:39, status:'done'},
+  {m:'6월', v:168, status:'done'},
+  {m:'7월', v:295, status:'done'},
+  {m:'8월', v:77, status:'current'},
+];
+const maxMonth = Math.max(...months.map(x=>x.v));
+const monthEl = document.getElementById('monthStrip');
+months.forEach(item=>{
+  const col = document.createElement('div');
+  col.className = 'month-col';
+  const val = document.createElement('span');
+  val.className = 'month-val';
+  val.textContent = item.v;
+  const bar = document.createElement('div');
+  bar.className = 'month-bar ' + item.status;
+  bar.style.height = Math.max((item.v/maxMonth*100),4)+'%';
+  const label = document.createElement('span');
+  label.className = 'month-lbl' + (item.status==='current' ? ' current':'');
+  label.textContent = item.m + (item.status==='current' ? ' (진행중)':'');
+  col.appendChild(val);
+  col.appendChild(bar);
+  col.appendChild(label);
+  monthEl.appendChild(col);
+});
+
+const ranking = [
+  {n:'brostacked', v:10},
+  {n:'cuponesyofertas_yaass', v:10},
+  {n:'dpark_way2', v:10},
+  {n:'anyim310', v:9},
+  {n:'rmaushop1904', v:8},
+  {n:'catawellness', v:6},
+  {n:'cuidarteesvida', v:5},
+  {n:'therealjnic_ole', v:5},
+  {n:'letsglowupwithlili', v:4},
+  {n:'palomaashop', v:3},
+  {n:'kmakaylab1', v:3},
+  {n:'andrearditacchio', v:2},
+  {n:'bedau18tuoine', v:1},
+  {n:'rosiitipsbeauty', v:1},
+];
+const maxRank = ranking[0].v;
+const rankEl = document.getElementById('rankList');
+ranking.forEach((item, i)=>{
+  const row = document.createElement('div');
+  row.className = 'rank-row';
+  const num = document.createElement('span');
+  num.className = 'rank-num';
+  num.textContent = i+1;
+  const name = document.createElement('span');
+  name.className = 'rank-name';
+  name.textContent = '@'+item.n;
+  const track = document.createElement('div');
+  track.className = 'rank-track';
+  const fill = document.createElement('div');
+  fill.className = 'rank-fill' + (i<3 ? ' top':'');
+  fill.style.width = (item.v/maxRank*100)+'%';
+  track.appendChild(fill);
+  const count = document.createElement('span');
+  count.className = 'rank-count';
+  count.textContent = item.v+'건';
+  row.appendChild(num);
+  row.appendChild(name);
+  row.appendChild(track);
+  row.appendChild(count);
+  rankEl.appendChild(row);
+});
+</script>
+</body>
+</html>
